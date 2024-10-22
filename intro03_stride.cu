@@ -17,7 +17,7 @@ void add(int n, float *x, float *y){
 
 int main(void){
 
-    int N = 80;//1<<20;
+    int N = 1300;//1<<20;
     printf("      N = %d\n", N);
     float *x, *y;
 
@@ -32,10 +32,10 @@ int main(void){
         y[idx] = val2;
     }
 
-    int blocksize = 128;
+    int blocksize = 1024;
     int gridsize = (N + blocksize - 1)/blocksize;
 
-    std::cout << "Gsize: " << gridsize << " blocks. Bsize: " << blocksize << " threads per block." << std::endl; 
+    std::cout << "Gsize: " << gridsize << " blocks. Bsize: " << blocksize << " threads per block." << std::endl;
     add<<<gridsize, blocksize>>>(N, x, y);
 
     //handle kernel cuda errors
