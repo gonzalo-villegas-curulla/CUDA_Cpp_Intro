@@ -29,7 +29,8 @@ int main(void){
     int SMs; // stream multiprocessors
     //char cudaDevAttrMultiProcessorCount;
     //cudaDeviceGetAttribute(&SMs,0,0);
-    cuDeviceGetAttribute(SMs);
+    int devId;
+    cudaDeviceGetAttribute(&SMs, cudaDevAttrMaxGridDimX, &devId);
 
 
 

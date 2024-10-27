@@ -14,10 +14,9 @@ void add(int n, float *x, float *y){
     //}
 }
 
-
 int main(void){
 
-    int N = 1300;//1<<20;
+    int N = 1<<20;
     printf("      N = %d\n", N);
     float *x, *y;
 

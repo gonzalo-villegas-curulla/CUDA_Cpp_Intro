@@ -3,14 +3,14 @@
 #include <cstdio>
 #include <cuda_runtime.h>
 
-// function for the GPU device 
+// function for the GPU device
 __global__
 void add(int n, float *x, float *y){
-   //int idx = blockIdx.x * blockDim.x + threadIdx.x;  
+   //int idx = blockIdx.x * blockDim.x + threadIdx.x;
    //if (idx<n){
    //     y[idx] = x[idx] + y[idx];
    //}
-    printf("Hola\n");
+    //printf("Hola\n");
    for (int idx=0; idx<n; idx++){
         y[idx] = x[idx] + y[idx];
    }
@@ -39,12 +39,12 @@ int main(void)
 
     // Run the kernel on 1M elements on the CPU/GPU
     //  NOW need to specify gridsize and blocksize inside <<<,>>>
-    int bsize = 256;
+    int bsize = 1024;
     int gsize = (N+bsize-1)/bsize;
     add<<<gsize,bsize>>>(N,x,y);
 
     // CUDA error message check after kernel launch
-    cudaError_t err = cudaDeviceSynchronize(); //  synchronize  
+    cudaError_t err = cudaDeviceSynchronize(); //  synchronize
     if (err != cudaSuccess) {
         std::cerr << "CUDA error after synch: " << cudaGetErrorString(err) << std::endl;
         return -1;
@@ -60,7 +60,7 @@ int main(void)
     std::cout << "Gsize: "<<gsize << " block(s). Bsize: " << bsize << " threads per block."<< std::endl;
 
 
-    // value error check 
+    // value error check
     float maxError = 0.0f;
     for (int idx=0; idx<N; idx++) {
         maxError = fmax(maxError, fabs(y[idx] - 3.0f));
