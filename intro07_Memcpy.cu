@@ -5,11 +5,16 @@ __global__
 void saxpy(int n, float a, float *x, float *y){
           // n length, a scalar, x and y array pointers
 
-  // indexing like grid(1)
-  int idx = blockIdx.x + blockDim.x + threadIdx.x;
-  if (idx<n)
-    y[idx] = a * x[idx] + y[idx];
-  // printf("%d ",idx);
+  // for (int IDX = blockDim.x * blockIdx.x + threadIdx.x; 
+  //     IDX<n; 
+  //     IDX += blockDim.x * gridDim.x ){
+  //
+  //   y[IDX] = a*x[IDX] + y[IDX];
+  // }
+
+
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (idx<n) y[idx] = a*x[idx]+y[idx];
 }
 
 // main
@@ -17,8 +22,8 @@ int main(void){
 
 
   // Parameters
-  int N = 100;//<<20; // 1*2^20
-  float a = 2.0f;
+  int N     =  1<<20;
+  float a   = 2.0f;
   int bsize = 256;
   int gsize = (N+bsize-1)/bsize;
 
@@ -61,7 +66,7 @@ int main(void){
 
   // now run the SAXPY kernel
   // num elem, alpha scalar, device array 1, device array 2
-  saxpy<<<gsize, bsize>>>(N,a, dev_x, dev_y);
+  saxpy<<<gsize,bsize>>>(N,a, dev_x, dev_y);
   err = cudaGetLastError();
   if (err != cudaSuccess){
     std::cerr<<"Kernel launch err: "<<cudaGetErrorString(err)<<std::endl;
@@ -69,12 +74,22 @@ int main(void){
   }
 
 
+  // copy dev memory back to host
+  err = cudaMemcpy(y, dev_y, N*sizeof(float), cudaMemcpyDeviceToHost);
+  if (err != cudaSuccess){
+    std::cerr<<"Mem erro dev2host: "<<cudaGetErrorString(err)<<std::endl;
+    return -1;
+  }
+
   // numerical error checks
   float maxerr = 0.0f;
+  float accumerr = 0.0f;
   for (int idx = 0; idx<N; idx++){
-    maxerr = maxerr +fabs(y[idx]-4.0f);//max(maxerr, fabs(y[idx]-4.0f));
+    accumerr = accumerr +fabs(y[idx]-4.0f);
+    maxerr = max(maxerr , abs(y[idx]-4.0f));
   }
-  printf("Max err: %f\n", maxerr);
+  printf("N: %d; gsize: %d; bsize: %d\n", N, gsize, bsize);
+  printf("Max err: %f ; Accum error: %f\n", maxerr, accumerr);
 
 
 
